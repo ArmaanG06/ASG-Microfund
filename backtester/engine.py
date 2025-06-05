@@ -44,3 +44,5 @@ class GenericBacktestEngine:
         )
         bt.run(**self.strategy_kwargs)
         bt.plot()
+
+

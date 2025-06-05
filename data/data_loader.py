@@ -18,10 +18,18 @@ class data_loader():
         data.dropna(inplace=True)
         if 'Adj Close' in data.columns:
             data.drop(columns=['Adj Close'], inplace=True)
-        #data.rename(columns={'Open': 'open','High': 'high','Low': 'low','Close': 'close','Volume': 'volume'}, inplace=True)
-        #required_cols = ['open', 'high', 'low', 'close', 'volume']
-        #data = data[required_cols]
+        data.rename(columns={
+            'Open': 'Open',
+            'High': 'High',
+            'Low': 'Low',
+            'Close': 'Close',
+            'Volume': 'Volume'
+        }, inplace=True)
 
+        required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+        data = data[required_cols]
+        data = data.droplevel('Ticker', axis=1)
+        data.reset_index(inplace=True)
         return data
 
 

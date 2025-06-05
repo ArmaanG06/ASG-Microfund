@@ -51,9 +51,9 @@ class mean_reversion_strategy(Strategy):
         price = self.data.Close[-1]
         # Entry logic
         if price < self.lower[-1] and not self.position:
-            self.buy()
+            self.buy(size=int(self.equity / self.data.Close[-1]))
         elif price > self.upper[-1] and not self.position:
-            self.sell()
+            self.sell(size=int(self.equity / self.data.Close[-1]))
 
         # Exit logic
         if self.position.is_long and price > self.data.Close[-2]:
