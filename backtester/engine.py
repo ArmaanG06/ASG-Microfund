@@ -43,6 +43,7 @@ class GenericBacktestEngine:
             commission=self.commission
         )
         bt.run(**self.strategy_kwargs)
-        bt.plot()
+        bt.plot(filename=None)
+
 
 

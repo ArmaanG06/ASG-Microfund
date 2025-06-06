@@ -2,6 +2,7 @@ from backtesting import Strategy
 import pandas as pd
 import pandas_ta as ta
 
+
 class mean_reversion_strategy_custom():
     def __init__(self, lookback: int = 20, std_dev: float = 2.0, threshold: float = 0.0):
         """
@@ -10,6 +11,9 @@ class mean_reversion_strategy_custom():
         :param lookback: Rolling window size for Bollinger Bands (e.g., 20 periods).
         :param std_dev: Number of standard deviations for Bollinger Bands (e.g., 2.0).
         :param threshold: Optional buffer percentage away from band before triggering signal (e.g., 0.0 for no buffer).
+
+        This version is not used since it does not inherit the strategy class from backtesting.py library and therefore
+        cannot run through the backtesting and output the detailed graphs and metrics
         """
         self.lookback = lookback
         self.std_dev = std_dev
@@ -38,25 +42,25 @@ class mean_reversion_strategy_custom():
 
 
 class mean_reversion_strategy(Strategy):
+    length = 20
+    std = 2.0
+    
     def init(self):
-        # Pre-compute Bollinger Bands once at strategy initialization
         price = pd.Series(self.data.Close)
-        bb = ta.bbands(close=price, length=20, std=2.0)
-
-        # Store indicators
-        self.lower = self.I(lambda: bb[f'BBL_20_2.0'])
-        self.upper = self.I(lambda: bb[f'BBU_20_2.0'])
+        bb = ta.bbands(close=price, length=self.length, std=self.std)
+        self.lower = self.I(lambda: bb[f'BBL_{self.length}_{self.std}'])
+        self.upper = self.I(lambda: bb[f'BBU_{self.length}_{self.std}'])
 
     def next(self):
-        price = self.data.Close[-1]
-        # Entry logic
-        if price < self.lower[-1] and not self.position:
-            self.buy(size=int(self.equity / self.data.Close[-1]))
+        price = self.data.Open[-1]
+        # Entry
+        if price < self.lower[-1]*1.2 and not self.position:
+            self.buy(size=int(self.equity / price))
         elif price > self.upper[-1] and not self.position:
-            self.sell(size=int(self.equity / self.data.Close[-1]))
+            self.sell(size=int(self.equity / price))
 
-        # Exit logic
-        if self.position.is_long and price > self.data.Close[-2]:
+        # Exit with 2% tolerance
+        if self.position.is_long and price >= self.upper[-1]:
             self.position.close()
-        elif self.position.is_short and price < self.data.Close[-2]:
+        elif self.position.is_short and price <= self.lower[-1]:
             self.position.close()

@@ -3,7 +3,7 @@ import pandas as pd
 from typing import List, Union
 
 
-class data_loader():
+class data_loader:
 
     def __init__(self):
         pass
@@ -18,18 +18,16 @@ class data_loader():
         data.dropna(inplace=True)
         if 'Adj Close' in data.columns:
             data.drop(columns=['Adj Close'], inplace=True)
-        data.rename(columns={
-            'Open': 'Open',
-            'High': 'High',
-            'Low': 'Low',
-            'Close': 'Close',
-            'Volume': 'Volume'
-        }, inplace=True)
+        #data.rename(columns={'Open': 'open','High': 'high','Low': 'low','Close': 'close','Volume': 'volume'}, inplace=True)
 
-        required_cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-        data = data[required_cols]
+        #required_cols = ['open', 'high', 'low', 'close', 'volume']
+        #data = data[required_cols]
         data = data.droplevel('Ticker', axis=1)
         data.reset_index(inplace=True)
+        data.index = data['Date']
+        del data['Date']
+        data.index.name = 'Date'
+
         return data
 
 
@@ -40,4 +38,4 @@ class data_loader():
             if df is not None:
                 data_dict[ticker] = df
 
-        return data_dict 
+        return data_dict
