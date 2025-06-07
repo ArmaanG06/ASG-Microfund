@@ -19,7 +19,6 @@ class data_loader:
         if 'Adj Close' in data.columns:
             data.drop(columns=['Adj Close'], inplace=True)
         #data.rename(columns={'Open': 'open','High': 'high','Low': 'low','Close': 'close','Volume': 'volume'}, inplace=True)
-
         #required_cols = ['open', 'high', 'low', 'close', 'volume']
         #data = data[required_cols]
         data = data.droplevel('Ticker', axis=1)
@@ -39,3 +38,8 @@ class data_loader:
                 data_dict[ticker] = df
 
         return data_dict
+    
+    def get_sp500_data(self, start: str, end: str):
+        sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
+        sp500 = sp500['Symbol'].to_list()
+        data = self.get_multiple_data(sp500, start, end)

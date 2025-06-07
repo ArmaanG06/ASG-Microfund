@@ -2,7 +2,7 @@ import pandas as pd
 from backtesting import Backtest, Strategy
 
 class GenericBacktestEngine:
-    def __init__(self, data: pd.DataFrame, strategy_cls, strategy_kwargs: dict = None, cash: float = 10000, commission: float = 0.002):
+    def __init__(self, strategy_cls, strategy_kwargs: dict = None, cash: float = 10000, commission: float = 0.002):
         """
         Initializes the backtest engine.
 
@@ -12,19 +12,17 @@ class GenericBacktestEngine:
         :param cash: Starting cash for the backtest.
         :param commission: Commission per trade (e.g., 0.002 = 0.2%).
         """
-        self.data = data
         self.strategy_cls = strategy_cls
         self.strategy_kwargs = strategy_kwargs or {}
         self.cash = cash
         self.commission = commission
-        
 
-    def run(self):
+    def run(self, data: pd.DataFrame):
         """
         Runs the backtest and returns results.
         """
         bt = Backtest(
-            self.data,
+            data,
             self.strategy_cls,
             cash=self.cash,
             commission=self.commission
@@ -32,18 +30,29 @@ class GenericBacktestEngine:
         stats = bt.run(**self.strategy_kwargs)
         return stats
 
-    def plot(self):
+    def plot(self, data: pd.DataFrame):
         """
         Plots the results using backtesting.py's built-in plot function.
         """
         bt = Backtest(
-            self.data,
+            data,
             self.strategy_cls,
             cash=self.cash,
             commission=self.commission
         )
         bt.run(**self.strategy_kwargs)
-        bt.plot(filename=None)
+        bt.plot()
 
-
-
+    def batch_backtest(self, data_dict: dict):
+        """
+        Run backtests on a dict of ticker: DataFrame pairs.
+        Returns a dict of ticker: stats
+        """
+        results = {}
+        for ticker, data in data_dict.items():
+            try:
+                stats = self.run(data)
+                results[ticker] = stats
+            except Exception as e:
+                print(f"Failed on {ticker}: {e}")
+        return results

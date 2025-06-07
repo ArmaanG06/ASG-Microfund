@@ -2,7 +2,6 @@ from backtesting import Strategy
 import pandas as pd
 import pandas_ta as ta
 
-
 class mean_reversion_strategy_custom():
     def __init__(self, lookback: int = 20, std_dev: float = 2.0, threshold: float = 0.0):
         """
@@ -55,11 +54,11 @@ class mean_reversion_strategy(Strategy):
         price = self.data.Open[-1]
         # Entry
         if price < self.lower[-1]*1.2 and not self.position:
-            self.buy(size=int(self.equity / price))
+            self.buy(size=int(self.equity / price), sl=(price*0.90), limit=price*0.95)
         elif price > self.upper[-1] and not self.position:
             self.sell(size=int(self.equity / price))
 
-        # Exit with 2% tolerance
+        # Exit
         if self.position.is_long and price >= self.upper[-1]:
             self.position.close()
         elif self.position.is_short and price <= self.lower[-1]:
