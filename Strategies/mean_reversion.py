@@ -36,30 +36,35 @@ class mean_reversion_strategy_custom():
         # Sell signal: price above upper band (with optional threshold buffer)
         df.loc[df['close'] > df[f'BBU_{self.lookback}_{self.std_dev}'] * (1 + self.threshold), 'signal'] = -1
         return df[['signal']]
+
     
-
-
-
 class mean_reversion_strategy(Strategy):
     length = 20
     std = 2.0
+    RSI_lower = 30
+    RSI_upper = 70
+    RSI_length = 14
     
     def init(self):
         price = pd.Series(self.data.Close)
         bb = ta.bbands(close=price, length=self.length, std=self.std)
         self.lower = self.I(lambda: bb[f'BBL_{self.length}_{self.std}'])
         self.upper = self.I(lambda: bb[f'BBU_{self.length}_{self.std}'])
+        self.rsi = self.I(lambda: ta.rsi(close=price, length=self.RSI_length))
 
     def next(self):
-        price = self.data.Open[-1]
+        open = self.data.Open[-1]
+        close = self.data.Close[-1]
         # Entry
-        if price < self.lower[-1]*1.2 and not self.position:
-            self.buy(size=int(self.equity / price), sl=(price*0.90), limit=price*0.95)
-        elif price > self.upper[-1] and not self.position:
-            self.sell(size=int(self.equity / price))
+        if open < self.lower[-1]*1.2 and not self.position:
+            if self.rsi < self.RSI_lower:
+                self.buy(size=int(self.equity / open), sl=(open*0.90), limit=open*0.95)
+        elif open > self.upper[-1] and not self.position:
+            if self.rsi > self.RSI_upper:
+                self.sell(size=int(self.equity / open))
 
         # Exit
-        if self.position.is_long and price >= self.upper[-1]:
+        if self.position.is_long and (open >= self.upper[-1]):
             self.position.close()
-        elif self.position.is_short and price <= self.lower[-1]:
+        elif self.position.is_short and (open <= self.lower[-1]):
             self.position.close()

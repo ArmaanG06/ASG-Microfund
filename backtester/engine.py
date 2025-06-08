@@ -1,5 +1,5 @@
 import pandas as pd
-from backtesting import Backtest, Strategy
+from backtesting import Backtest
 
 class GenericBacktestEngine:
     def __init__(self, strategy_cls, strategy_kwargs: dict = None, cash: float = 10000, commission: float = 0.002):
