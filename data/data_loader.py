@@ -43,3 +43,4 @@ class data_loader:
         sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
         sp500 = sp500['Symbol'].to_list()
         data = self.get_multiple_data(sp500, start, end)
+        return data

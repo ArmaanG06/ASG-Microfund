@@ -1,6 +1,7 @@
 from data.data_loader import data_loader
 from backtester.engine import GenericBacktestEngine
 from Strategies.mean_reversion import mean_reversion_strategy
+from portfolio.benchmark import benchmark
 import pandas as pd
 
 
@@ -12,7 +13,7 @@ def test_sp500():
     results = engine.batch_backtest(sp500_dict)
 
     sorted_results = sorted(results.items(), key=lambda x: x[1]['Return [%]'], reverse=True)
-    for ticker, stat in sorted_results[:10]:
+    for ticker, stat in sorted_results:
         print(f"{ticker}: {stat['Return [%]']:.2f}%")
 
 
@@ -42,5 +43,3 @@ def test_stock():
     results = engine.run(data)
     engine.plot(data)
     print(results)
-
-test_stock()
