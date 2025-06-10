@@ -1,4 +1,5 @@
 import yfinance as yf
+import os
 import pandas as pd
 from typing import List, Union
 
@@ -10,6 +11,7 @@ class data_loader:
 
     def get_data(self, ticker: str, start: str, end: str) -> pd.DataFrame:
         ticker = ticker.replace('.', '-')
+
 
         data = yf.download(ticker, start=start, end=end, progress=False)
         if data.empty:
