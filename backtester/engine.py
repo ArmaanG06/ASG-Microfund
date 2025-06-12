@@ -34,6 +34,9 @@ class GenericBacktestEngine:
         """
         Plots the results using backtesting.py's built-in plot function.
         """
+        strategy = self.strategy_cls.__name__
+        start_date = str(data.index[0])[:10]
+        end_date = str(data.index[-1])[:10]
         bt = Backtest(
             data,
             self.strategy_cls,
@@ -41,7 +44,7 @@ class GenericBacktestEngine:
             commission=self.commission
         )
         bt.run(**self.strategy_kwargs)
-        bt.plot()
+        bt.plot(filename=f"./reporting/charts/{strategy}_{start_date}--{end_date}")
 
     def batch_backtest(self, data_dict: dict):
         """

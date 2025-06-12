@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ strategy_name }} - Performance Report</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 60%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">
+    {{ strategy_name }} - Strategy Performance Summary
+    </h2>
+    <p style="text-align: center;">
+        Period: {{ start_date }} to {{ end_date }}
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Average</th>
+                <th>Median</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric, stats in summary_stats.items() %}
+                {% if metric != 'Traded Stocks' %}
+                    <tr>
+                        <td>{{ metric }}</td>
+                        <td>{{ "%.2f"|format(stats.avg if stats.avg is not none else 0) }}</td>
+                        <td>{{ "%.2f"|format(stats.median if stats.median is not none else 0) }}</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            <tr>
+                <td colspan="2"><strong>Traded Stocks</strong></td>
+                <td><strong>{{ summary_stats['Traded Stocks'] }}</strong></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
