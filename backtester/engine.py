@@ -21,6 +21,7 @@ class GenericBacktestEngine:
         """
         Runs the backtest and returns results.
         """
+        
         bt = Backtest(
             data,
             self.strategy_cls,

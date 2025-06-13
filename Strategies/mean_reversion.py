@@ -68,3 +68,4 @@ class mean_reversion_strategy(Strategy):
             self.position.close()
         elif self.position.is_short and (open <= self.lower[-1]):
             self.position.close()
+        

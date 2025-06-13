@@ -17,6 +17,7 @@ class benchmark:
         self.returns_df['Returns'] = self.daily_returns
         self.returns_df.dropna(inplace=True)
 
+
     def get_daily_returns(self):
         returns = self.benchmark_data['Close'].pct_change().dropna()
         return returns  # Series

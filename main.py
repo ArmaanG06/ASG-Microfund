@@ -44,6 +44,7 @@ def test_stock():
     results = engine.run(data)
     engine.plot(data)
     print(results)
+    
 
 
 generate_report(mean_reversion_strategy, start_date="2024-01-01", end_date="2025-01-01")

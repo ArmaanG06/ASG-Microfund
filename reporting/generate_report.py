@@ -3,10 +3,11 @@ import jinja2
 import datetime as datetime
 from data.data_loader import data_loader
 from backtester.engine import GenericBacktestEngine
-from Strategies.mean_reversion import mean_reversion_strategy
 from portfolio.benchmark import benchmark
 import pandas as pd
 from statistics import mean, median
+import numpy as np
+
 
 
 def generate_report(strategy, start_date, end_date):
@@ -30,40 +31,46 @@ def generate_report(strategy, start_date, end_date):
     except jinja2.TemplateNotFound:
         raise FileNotFoundError("Template 'monthly_report_template.html' not found in ./reporting/templates")
 
-    # Load data and run backtest
+    strategy_name = strategy.__name__
+
     dt = data_loader()
     sp500_dict = dt.get_sp500_data(start_date, end_date)
+    if strategy_name == "mean_reversion_strategy":
+        
+        opt_params = [20, 2.0, 10, 0, 100]
+        engine = GenericBacktestEngine(
+                strategy_cls=strategy,
+                strategy_kwargs={'length': opt_params[0], 'std': opt_params[1], 'RSI_upper': opt_params[3], 'RSI_lower': opt_params[4], 'RSI_length': opt_params[2]},
+                cash=10000,
+                commission=0.000
+            )    
+        results = engine.batch_backtest(sp500_dict)
 
-    engine = GenericBacktestEngine(strategy)
-    results = engine.batch_backtest(sp500_dict)
-
-    # Get summarized performance stats
     summary_stats = _get_strategy_stats(results)
+    bchmk = benchmark(start_date, end_date)
+    benchmark_ticker = '^GSPC'
+    benchmark_stats = bchmk.get_metrics()
+    benchmark_summary_stats = _get_benchmark_stats(benchmark_stats)
 
-    # Strategy name
-    strategy_name = strategy.__class__.__name__
-
-    # Format output path
     output_dir = os.path.join("reporting", "reports")
     os.makedirs(output_dir, exist_ok=True)
 
     output_filename = f"{strategy_name}-{start_date}--{end_date}.html"
     output_path = os.path.join(output_dir, output_filename)
 
-    # Render the report
     rendered_html = template.render(
         strategy_name=strategy_name,
         summary_stats=summary_stats,
+        benchmark_summary_stats=benchmark_summary_stats,
+        benchmark_ticker=benchmark_ticker,
         start_date=start_date,
         end_date=end_date
     )
-
-    # Save to file
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(rendered_html)
 
     print(f"✅ Report generated and saved to {output_path}")
-
+    
 
 
 def _get_strategy_stats(results, metrics=None):
@@ -83,34 +90,38 @@ def _get_strategy_stats(results, metrics=None):
         metrics = ['Return [%]', 'CAGR [%]', 'Sharpe Ratio', 'Max. Drawdown [%]']
 
     metric_values = {metric: [] for metric in metrics}
+    traded_stocks = 0
 
-    # Filter and sort
-    filtered_results = sorted(
-        [stat for stat in results.values() if stat.get('Return [%]', 0) != 0],
-        key=lambda x: x['Return [%]'],
-        reverse=True
-    )
+    sorted_results = sorted(results.items(), key=lambda x: x[1]['Return [%]'], reverse=True)
 
-    for stat in filtered_results:
-        for metric in metrics:
-            value = stat.get(metric)
-            if value is not None:
-                try:
-                    metric_values[metric].append(float(value))
-                except ValueError:
-                    continue  # Skip non-convertible values
+    for ticker, stat in sorted_results:
+        if stat['Return [%]'] != 0:
+            traded_stocks += 1
+            for metric in metrics:
+                val = stat.get(metric, np.nan)
+                metric_values[metric].append(val)
 
-    summary_stats = {
-        metric: {
-            'avg': mean(values) if values else None,
-            'median': median(values) if values else None
+    summary_stats = {}
+
+    for metric, values in metric_values.items():
+        clean_vals = [v for v in values if not (isinstance(v, float) and np.isnan(v))]
+        summary_stats[metric] = {
+            'avg': np.mean(clean_vals) if clean_vals else np.nan,
+            'median': np.median(clean_vals) if clean_vals else np.nan
         }
-        for metric, values in metric_values.items()
-    }
 
-    summary_stats['Traded Stocks'] = len(filtered_results)
+    summary_stats['Traded Stocks'] = traded_stocks
 
     return summary_stats
 
 
-generate_report(mean_reversion_strategy, start_date="2024-01-01", end_date="2025-01-01")
+def _get_benchmark_stats(stats, metrics=None):
+    if metrics is None:
+        metrics = ['Return [%]', 'CAGR [%]', 'Sharpe Ratio', 'Max. Drawdown [%]']
+    
+    benchmark_metric_values = {metric: [] for metric in metrics}
+
+    for metric in metrics:
+        benchmark_metric_values[metric] = float(stats[metric])
+
+    return benchmark_metric_values
