@@ -46,3 +46,10 @@ class data_loader:
         sp500 = sp500['Symbol'].to_list()
         data = self.get_multiple_data(sp500, start, end)
         return data
+    
+    def get_sp500_data_df(self, start: str, end: str):
+        sp500 = pd.read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")[0]
+        tickers = [ticker.replace('.', '-') for ticker in sp500.Symbol.to_list()]
+        df = yf.download(tickers, start=start, end=end)['Close']
+        df = df.dropna(axis=1)
+        return df
