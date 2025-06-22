@@ -4,47 +4,26 @@ from Strategies.mean_reversion import mean_reversion_strategy
 from portfolio.benchmark import benchmark
 from reporting.generate_report import generate_report
 import pandas as pd
+from Strategies.factor_investing import factor_investing_screener, factor_investing_strategy
 
 
-def test_sp500():
-    dt = data_loader()
-    sp500_dict = dt.get_sp500_data('2024-01-01', '2025-01-01')
-
-    engine = GenericBacktestEngine(mean_reversion_strategy)
-    results = engine.batch_backtest(sp500_dict)
-
-    sorted_results = sorted(results.items(), key=lambda x: x[1]['Return [%]'], reverse=True)
-    for ticker, stat in sorted_results:
-        print(f"{ticker}: {stat['Return [%]']:.2f}%")
 
 
-    num = 0
-    total = 0
-    for ticker, stat in sorted_results:
-        total += stat['Return [%]']
-        num += 1
-        print(f"{ticker}: {stat['Return [%]']:.2f}%")
+#generate_report(mean_reversion_strategy, start_date="2024-01-01", end_date="2025-01-01")
 
-    avg = total/num
-    print(avg)
+"""
+dl = data_loader()
+tickers = ['NVDA', 'JPM', "F", 'UNH']
+screener = factor_investing_screener(dl, tickers)
+top_stocks = screener.choose_stocks(top_n=10)
+print(top_stocks[['ticker', 'composite_score']])
+"""
 
-def test_stock():
-    opt_params = [20, 2.0, 10, 0, 100]
-    dt = data_loader()
-    data = dt.get_data("TSLA", '2023-01-01', '2025-06-01')
+dl = data_loader()
+screener = factor_investing_screener(dl, tickers=['NVDA', 'UNH', 'JPM', 'F'])
+strategy = factor_investing_strategy("2023-01-01", "2025-01-01", commission=0.01, screener=screener, data_loader=dl)
 
-
-    engine = GenericBacktestEngine(
-        strategy_cls=mean_reversion_strategy,
-        strategy_kwargs={'length': opt_params[0], 'std': opt_params[1], 'RSI_upper': opt_params[3], 'RSI_lower': opt_params[4], 'RSI_length': opt_params[2]},
-        cash=10000,
-        commission=0.000
-    )
-
-    results = engine.run(data)
-    engine.plot(data)
-    print(results)
-    
-
-
-generate_report(mean_reversion_strategy, start_date="2024-01-01", end_date="2025-01-01")
+pf = strategy.backtest()
+strategy.plot_performance()
+metrics = strategy.get_metrics()
+print(metrics)
