@@ -44,6 +44,7 @@ class mean_reversion_strategy(Strategy):
     RSI_lower = 30
     RSI_upper = 70
     RSI_length = 14
+    size = 0.99
     
     def init(self):
         price = pd.Series(self.data.Close)
@@ -58,10 +59,10 @@ class mean_reversion_strategy(Strategy):
         # Entry
         if open < self.lower[-1]*1.2 and not self.position:
             if self.rsi < self.RSI_lower:
-                self.buy(size=int(self.equity / open), sl=(open*0.90), limit=open*0.95)
+                self.buy()
         elif open > self.upper[-1] and not self.position:
             if self.rsi > self.RSI_upper:
-                self.sell(size=int(self.equity / open))
+                self.sell()
 
         # Exit
         if self.position.is_long and (open >= self.upper[-1]):

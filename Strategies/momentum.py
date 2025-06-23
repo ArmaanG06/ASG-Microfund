@@ -8,12 +8,13 @@ class momentum_strategy():
 
     LOOKBACK_WINDOWS = [12,6,3]
 
-    def __init__(self, start_date, end_date, index:str="^GSPC", LOOKBACK_WINDOWS: list=[12,6,3], commission: float=0.0):
+    def __init__(self, start_date, end_date, equity, commission: float=0.02, index:str="^GSPC", LOOKBACK_WINDOWS: list=[12,6,3]):
         self.start_date = start_date
         self.end_date = end_date
         self.index = index
         self.LOOKBACK_WINDOWS = LOOKBACK_WINDOWS
         self.commission = commission/100
+        self.equity = equity
 
     def _get_data(self):
         dl = data_loader()
@@ -91,8 +92,8 @@ class momentum_strategy():
             "End": end,
             "Duration": duration,
             "Exposure Time [%]": 100.0,
-            "Equity Final [$]": df.iloc[-1] * 10000,
-            "Equity Peak [$]": df.max() * 10000,
+            "Equity Final [$]": df.iloc[-1] * self.equity,
+            "Equity Peak [$]": df.max() * self.equity,
             "Return [%]": cumulative_return * 100,
             "Buy & Hold Return [%]": cumulative_return * 100,
             "Return (Ann.) [%]": cagr * 100,
@@ -133,6 +134,5 @@ class momentum_strategy():
                 returns.append(monthly_ret * (1-self.commission))
 
             strat_pf = pd.Series(returns, index=mtl.index[13:]).cumprod()
-            self._plot_pf(strat_pf)
             metrics = self._metrics(strat_pf)
             return metrics

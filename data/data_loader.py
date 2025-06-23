@@ -5,8 +5,6 @@ from typing import List, Union
 import json
 
 
-
-
 class data_loader:
 
     def __init__(self):

@@ -90,11 +90,11 @@ class factor_investing_screener:
 
 class factor_investing_strategy():
 
-    def __init__(self, start_date, end_date, commission, screener, data_loader):
+    def __init__(self, start_date, end_date, commission, data_loader, tickers):
         self.start_date = pd.to_datetime(start_date)
         self.end_date = pd.to_datetime(end_date)
         self.commission = commission / 100
-        self.screener = screener
+        self.screener = factor_investing_screener(data_loader, tickers)
         self.loader = data_loader
         self.portfolio = []
         self.returns = []
@@ -103,7 +103,7 @@ class factor_investing_strategy():
         top_stocks = self.screener.choose_stocks()
         return top_stocks['ticker'].tolist()
     
-    def backtest(self, ):
+    def backtest(self):
         rebalance_dates = pd.date_range(self.start_date, self.end_date, freq='12M')
 
         # Track portfolio cumulative return
@@ -178,13 +178,13 @@ class factor_investing_strategy():
         max_dd = drawdown.min()
 
         metrics = {
-            'CAGR': ann_ret,
-            'Annual Volatility': ann_vol,
+            'Return [%]': returns.iloc[-1],
+            'CAGR [%]': ann_ret,
             'Sharpe Ratio': sharpe,
-            'Max Drawdown': max_dd
+            'Max. Drawdown [%]': max_dd
         }
 
-        return pd.Series(metrics)
+        return metrics
     
 
 
