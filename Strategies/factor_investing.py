@@ -100,55 +100,39 @@ class factor_investing_strategy():
         self.returns = []
 
     def get_stocks(self, date):
-        top_stocks = self.screener.choose_stocks()
+        top_stocks = self.screener.choose_stocks(top_n=3)
         return top_stocks['ticker'].tolist()
     
     def backtest(self):
-        rebalance_dates = pd.date_range(self.start_date, self.end_date, freq='12M')
-
-        # Track portfolio cumulative return
-        cum_pf = []
-
-        # Loop through each period
-        for i in range(len(rebalance_dates) - 1):
-            rebalance_date = rebalance_dates[i]
-            next_rebalance = rebalance_dates[i + 1]
-
-            # Get tickers to hold
-            tickers = self.get_stocks(rebalance_date)
-            if not tickers:
-                print(f"[!] No stocks selected for {rebalance_date.date()}. Skipping.")
-                continue
-
-            # Download price data for period
-            data_dict = self.loader.get_multiple_data(tickers, start=rebalance_date, end=next_rebalance)
-            prices = pd.DataFrame({ticker: df['Close'] for ticker, df in data_dict.items() if 'Close' in df})
-
-            if prices.empty:
-                print(f"[!] No valid price data for {rebalance_date.date()}. Skipping.")
-                continue
-
-            prices = prices.dropna(axis=1, how='any')  # drop any stocks with missing prices
-            if prices.shape[1] == 0:
-                continue
-
-            # Calculate equal-weighted returns
-            rets = prices.pct_change().dropna()
-            pf_ret = rets.mean(axis=1) * (1 - self.commission)
-            cum_pf.append(pf_ret)
-
-        if not cum_pf:
-            print("[!] No portfolio returns were calculated.")
+        tickers = self.get_stocks(self.start_date)
+        if not tickers:
+            print(f"[!] No stocks selected at start date {self.start_date}.")
             return None
+        
+        data_dict = self.loader.get_multiple_data(tickers, start=self.start_date, end=self.end_date)
+        prices = pd.DataFrame({ticker: df['Close'] for ticker, df in data_dict.items() if 'Close' in df})
 
-        # Combine and calculate cumulative performance
-        pf_series = pd.concat(cum_pf)
-        pf_cum = (1 + pf_series).cumprod()
+        if prices.empty:
+            print("[!] No valid price data for the period.")
+            return None
+        
+        prices = prices.dropna(axis=1, how='any')
+        if prices.shape[1] == 0:
+            print("[!] All stocks had missing data. Exiting.")
+            return None
+        
+        rets = prices.pct_change().dropna()
 
-        self.returns = pf_series
+        pf_ret = rets.mean(axis=1) * (1-self.commission)
+
+        pf_cum = (1+pf_ret).cumprod()
+
+        self.returns = pf_ret
         self.portfolio = pf_cum
 
         return pf_cum
+        
+
 
     def plot_performance(self):
         if self.portfolio is None or self.portfolio.empty:
@@ -170,21 +154,31 @@ class factor_investing_strategy():
         if returns is None or returns.empty:
             return None
 
-        ann_ret = (1 + returns.mean()) ** 12 - 1
-        ann_vol = returns.std() * np.sqrt(12)
+        # Correct total return
+        total_return = (1 + returns).prod() - 1
+
+        # Annualized return (CAGR)
+        ann_ret = (1 + total_return) ** (12 / len(returns.resample('M').mean())) - 1
+
+        # Annualized volatility
+        ann_vol = returns.std() * np.sqrt(252)  # Use 252 if using daily returns
+
+        # Sharpe ratio
         sharpe = (ann_ret - risk_free_rate) / ann_vol if ann_vol != 0 else np.nan
+
+        # Max drawdown
         cum_returns = self.portfolio
         drawdown = cum_returns / cum_returns.cummax() - 1
         max_dd = drawdown.min()
 
         metrics = {
-            'Return [%]': returns.iloc[-1],
-            'CAGR [%]': ann_ret,
+            'Total Return [%]': total_return * 100,
+            'CAGR [%]': ann_ret * 100,
             'Sharpe Ratio': sharpe,
-            'Max. Drawdown [%]': max_dd
+            'Max. Drawdown [%]': max_dd * 100
         }
 
         return metrics
-    
+
 
 

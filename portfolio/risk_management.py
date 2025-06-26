@@ -85,3 +85,5 @@ class RiskManagement:
             'risk_score': self._risk_score,
             'allocations_advanced': self.get_strategy_allocation(),
         }
+    
+    

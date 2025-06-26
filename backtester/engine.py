@@ -28,7 +28,7 @@ class GenericBacktestEngine:
             cash=self.cash,
             commission=self.commission
         )
-        stats = bt.run(size=0.99,**self.strategy_kwargs)
+        stats = bt.run()
         return stats
 
     def plot(self, data: pd.DataFrame):

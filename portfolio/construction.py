@@ -44,11 +44,10 @@ class Portfolio:
     
     def backtest_mean(self):
         mean_reversion_results = []
-        opt_params = [20, 2.0, 10, 70, 30]
 
         engine = GenericBacktestEngine(
                     strategy_cls=self.mean_strategy,
-                    strategy_kwargs={'length': opt_params[0], 'std': opt_params[1], 'RSI_upper': opt_params[3], 'RSI_lower': opt_params[4], 'RSI_length': opt_params[2]},
+                    strategy_kwargs={},
                     cash=self.mean_alloc*self.cash,
                     commission=self.commissions
                 )    
@@ -75,8 +74,7 @@ class Portfolio:
         traded_stocks = 0
 
         sorted_results = sorted(mean_reversion_results.items(), key=lambda x: x[1]['Return [%]'], reverse=True)
-        for ticker, stats in mean_reversion_results.items():
-            print(ticker, type(stats), stats)
+        
 
         for ticker, stat in sorted_results:
             if stat['Return [%]'] != 0:
