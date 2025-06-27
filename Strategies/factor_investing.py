@@ -158,7 +158,7 @@ class factor_investing_strategy():
         total_return = (1 + returns).prod() - 1
 
         # Annualized return (CAGR)
-        ann_ret = (1 + total_return) ** (12 / len(returns.resample('M').mean())) - 1
+        ann_ret = (1 + total_return) ** (12 / len(returns.resample('ME').mean())) - 1
 
         # Annualized volatility
         ann_vol = returns.std() * np.sqrt(252)  # Use 252 if using daily returns
@@ -172,7 +172,7 @@ class factor_investing_strategy():
         max_dd = drawdown.min()
 
         metrics = {
-            'Total Return [%]': total_return * 100,
+            'Return [%]': total_return * 100,
             'CAGR [%]': ann_ret * 100,
             'Sharpe Ratio': sharpe,
             'Max. Drawdown [%]': max_dd * 100

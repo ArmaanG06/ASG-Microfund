@@ -122,13 +122,13 @@
         }
     </style>
 
-    <title>ASG Microfund - Performance Report - {{ start_date }} to {{ end_date }}</title>
+    <title>ASG Microfund - Performance Report - 2020-01-01 to 2025-01-01</title>
 </head>
 <body>
     <h2>
     ASG Microfund - Strategy Performance Summary
     </h2>
-    <p>Period: {{ start_date  }} to {{ end_date }}</p>
+    <p>Period: 2020-01-01 to 2025-01-01</p>
 
 
 <h2>Mean Reversion Strategy</h2>
@@ -257,7 +257,7 @@
         Overall, the strategy's design reflects a balance between indicator-driven signal quality, dynamic risk management, and simple yet effective execution logic.
     </p>
 
-    <h4>Completed Metrics for {{ start_date }} to {{ end_date }}</h4>
+    <h4>Completed Metrics for 2020-01-01 to 2025-01-01</h4>
     <table>
         <thead>
             <tr>
@@ -267,13 +267,31 @@
             </tr>
         </thead>
         <tbody>
-            {% for metric, stats in mean_reversion_summary.items() %}
+            
                     <tr>
-                        <td>{{ metric }}</td>
-                        <td>{{ "%.2f"|format(stats.avg if stats.avg is not none else 0) }}</td>
-                        <td>{{ "%.2f"|format(stats.median if stats.median is not none else 0) }}</td>
+                        <td>Return [%]</td>
+                        <td>34.63</td>
+                        <td>34.63</td>
                     </tr>
-            {% endfor %}
+            
+                    <tr>
+                        <td>CAGR [%]</td>
+                        <td>4.19</td>
+                        <td>4.19</td>
+                    </tr>
+            
+                    <tr>
+                        <td>Sharpe Ratio</td>
+                        <td>0.00</td>
+                        <td>0.00</td>
+                    </tr>
+            
+                    <tr>
+                        <td>Max. Drawdown [%]</td>
+                        <td>-90.54</td>
+                        <td>-90.54</td>
+                    </tr>
+            
         </tbody>
     </table>
 
@@ -364,7 +382,7 @@
         momentum strategy against passive alternatives and other quantitative systems.
     </p>
 
-    <h4>Completed Metrics for {{ start_date }} to {{ end_date }}</h4>
+    <h4>Completed Metrics for 2020-01-01 to 2025-01-01</h4>
     <table>
         <thead>
             <tr>
@@ -373,12 +391,27 @@
             </tr>
         </thead>
         <tbody>
-            {% for metric, stat in momentum_summary.items() %}
+            
                 <tr>
-                    <td>{{ metric }}</td>
-                    <td>{{ "%.2f"|format(stat) }}</td>
+                    <td>Return [%]</td>
+                    <td>127.20</td>
                 </tr>
-            {% endfor %}
+            
+                <tr>
+                    <td>CAGR [%]</td>
+                    <td>23.84</td>
+                </tr>
+            
+                <tr>
+                    <td>Sharpe Ratio</td>
+                    <td>0.90</td>
+                </tr>
+            
+                <tr>
+                    <td>Max. Drawdown [%]</td>
+                    <td>-19.40</td>
+                </tr>
+            
         </tbody>
     </table>
 
@@ -482,7 +515,7 @@
         alpha across market regimes, and support institutional adoption of the strategy in long-term portfolios.
     </p>
 
-    <h4>Completed Metrics for {{ start_date }} to {{ end_date }}</h4>
+    <h4>Completed Metrics for 2020-01-01 to 2025-01-01</h4>
     <table>
         <thead>
             <tr>
@@ -491,12 +524,27 @@
             </tr>
         </thead>
         <tbody>
-            {% for metric, stat in factor_summary.items() %}
+            
                 <tr>
-                    <td>{{ metric }}</td>
-                    <td>{{ "%.2f"|format(stat) }}</td>
+                    <td>Return [%]</td>
+                    <td>540.71</td>
                 </tr>
-            {% endfor %}
+            
+                <tr>
+                    <td>CAGR [%]</td>
+                    <td>44.99</td>
+                </tr>
+            
+                <tr>
+                    <td>Sharpe Ratio</td>
+                    <td>1.24</td>
+                </tr>
+            
+                <tr>
+                    <td>Max. Drawdown [%]</td>
+                    <td>-45.45</td>
+                </tr>
+            
         </tbody>
     </table>
 
@@ -599,25 +647,25 @@
 <h2>Final Portfolio Preformance Summary</h2>
     <p>
         The aggregate portfolio, constructed through a dynamic allocation across the Mean Reversion, Momentum, and Factor Investing strategies,
-        delivered a total return of <strong> {{ final_metrics['Return [%]'] }}%</strong> over the backtesting period. The portfolio achieved a compound 
+        delivered a total return of <strong> 254.3640732452941%</strong> over the backtesting period. The portfolio achieved a compound 
         annual growth rate (CAGR) of 
-        <strong>{{ final_metrics['CAGR [%]'] }}%</strong>, indicating robust long-term compounding performance despite regime shifts across the market cycle. Risk-adjusted 
-        performance was solid, with a Sharpe Ratio of <strong>{{ final_metrics['Sharpe Ratio'] }}</strong>, reflecting efficient return generation relative to volatility. 
-        The maximum observed drawdown was <strong>{{ final_metrics['Max. Drawdown'] }}%</strong>, demonstrating strong capital preservation and resilience through market stress 
+        <strong>26.909777212586054%</strong>, indicating robust long-term compounding performance despite regime shifts across the market cycle. Risk-adjusted 
+        performance was solid, with a Sharpe Ratio of <strong>0.8159041150352908</strong>, reflecting efficient return generation relative to volatility. 
+        The maximum observed drawdown was <strong>%</strong>, demonstrating strong capital preservation and resilience through market stress 
         periods. These metrics collectively highlight the effectiveness of the multi-strategy framework in balancing alpha generation with disciplined risk control.
     </p>
 
 
     <h2>Benchmark: ^GSPC </h2>
     <h4>Description</h4>
-    <p>The benchmark used to evaluate strategy performance is a passive, equal-weighted buy-and-hold portfolio of {{ benchmark_ticker }}
+    <p>The benchmark used to evaluate strategy performance is a passive, equal-weighted buy-and-hold portfolio of 
         constituents over the same testing period </p>
 
     <ul> 
         <li>Benchmark Construction</li>
         <ul>
-            <li>Universe: All {{ benchmark_ticker }} tickers avaliable from the data loader within the specific backtest range</li>
-            <li>Weighting: Due to ^GSPC using capitalization-weighted methodology we use the same because data was loaded directly from {{ benchmark_ticker }} information</li>
+            <li>Universe: All  tickers avaliable from the data loader within the specific backtest range</li>
+            <li>Weighting: Due to ^GSPC using capitalization-weighted methodology we use the same because data was loaded directly from  information</li>
             <li>Execution</li>
             <ul>
                 <li>Each position is assumed to be purchased at the opening price on the first day of the backtest period</li>
@@ -633,7 +681,7 @@
     <p>This benchmark serves as a baseline for risk-adjusted and absolute performance comparison. Any strategy aiming to outperform
          this benchmark must justify its complexity, transaction costs, and risk profile with superior Sharpe ratio, drawdown management, or alpha generation</p>
 
-    <h4>Completed Metrics for {{ start_date }} to {{ end_date }}</h4>
+    <h4>Completed Metrics for 2020-01-01 to 2025-01-01</h4>
     <table>
         <thead>
             <tr>
@@ -642,12 +690,27 @@
             </tr>
         </thead>
         <tbody>
-            {% for metric, stat in benchmark_summary.items() %}
+            
                 <tr>
-                    <td>{{ metric }}</td>
-                    <td>{{ "%.2f"|format(stat) }}</td>
+                    <td>Return [%]</td>
+                    <td>80.54</td>
                 </tr>
-            {% endfor %}
+            
+                <tr>
+                    <td>CAGR [%]</td>
+                    <td>12.57</td>
+                </tr>
+            
+                <tr>
+                    <td>Sharpe Ratio</td>
+                    <td>0.66</td>
+                </tr>
+            
+                <tr>
+                    <td>Max. Drawdown</td>
+                    <td>-33.92</td>
+                </tr>
+            
         </tbody>
     </table>
 </body>

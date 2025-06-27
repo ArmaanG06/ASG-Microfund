@@ -47,13 +47,11 @@ class Portfolio:
 
         engine = GenericBacktestEngine(
                     strategy_cls=self.mean_strategy,
-                    strategy_kwargs={},
                     cash=self.mean_alloc*self.cash,
                     commission=self.commissions
                 )    
         data = self.data_loader.get_multiple_data(self.mean_tickers, self.start, self.end)
         mean_reversion_results = engine.batch_backtest(data)
-
         return mean_reversion_results
     
     def backtest_momentum(self):
@@ -126,7 +124,8 @@ class Portfolio:
         factor_results = self.backtest_factor()
 
         mean_reversion_summary, momentum_summary, factor_summary, final_metrics = self._get_portfolio_results(mean_reversion_results, momentum_results, factor_results)
-        return mean_reversion_summary, momentum_summary, factor_summary, final_metrics
+        benchmark_results = self.benchmark.get_metrics()
+        return mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_results
 
 
     

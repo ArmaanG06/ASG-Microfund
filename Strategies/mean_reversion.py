@@ -40,75 +40,62 @@ class mean_reversion_strategy_custom():
 
     
 class mean_reversion_strategy(Strategy):
+    # Strategy parameters
     bb_length = 20
     bb_std = 2.0
-    rsi_length = 14
+    rsi_length = 15
     rsi_lower = 30
     rsi_upper = 70
     atr_length = 14
-    position_size = 0.2  # 20% of equity per trade
     
-    def init(self):
-        # Calculate indicators once during initialization
-        close = pd.Series(self.data.Close)
+    def init(self):        
+        price = pd.Series(self.data.Close)
         high = pd.Series(self.data.High)
         low = pd.Series(self.data.Low)
-        
-        # Bollinger Bands with error handling
-        bb = ta.bbands(close, length=self.bb_length, std=self.bb_std)
-        if bb is not None:
-            self.lower_band = self.I(lambda x: bb[f'BBL_{self.bb_length}_{self.bb_std}'].values, 'Lower Band')
-            self.upper_band = self.I(lambda x: bb[f'BBU_{self.bb_length}_{self.bb_std}'].values, 'Upper Band')
-        else:
-            # Fallback if BB calculation fails
-            self.lower_band = self.I(lambda x: np.full(len(x), np.nan), 'Lower Band')
-            self.upper_band = self.I(lambda x: np.full(len(x), np.nan), 'Upper Band')
-        
-        # RSI with error handling
-        rsi = ta.rsi(close, length=self.rsi_length)
-        self.rsi = self.I(lambda x: rsi.values if rsi is not None else np.full(len(x), np.nan), 'RSI')
-        
-        # ATR with error handling
-        atr = ta.atr(high, low, close, length=self.atr_length)
-        self.atr = self.I(lambda x: atr.values if atr is not None else np.full(len(x), np.nan), 'ATR')
-        
-        # Volume filter with error handling
+
+        bb = ta.bbands(close=price, length=self.bb_length, std=self.bb_std)
+        rsi = ta.rsi(price, self.rsi_length)
+        atr = ta.atr(high, low, price, self.atr_length)
         volume_sma = ta.sma(pd.Series(self.data.Volume), length=20)
-        self.volume_filter = self.I(lambda x: volume_sma.values if volume_sma is not None else np.zeros(len(x)), 'Volume Filter')
+        
+
+        self.lower = self.I(lambda x: bb[f'BBL_{self.bb_length}_{self.bb_std}'], 'BB_Lower')
+        self.upper = self.I(lambda x: bb[f'BBU_{self.bb_length}_{self.bb_std}'], 'BB_Upper')
+        self.middle = self.I(lambda x: bb[f'BBM_{self.bb_length}_{self.bb_std}'], 'BB_Middle')
+        self.rsi = self.I(lambda x: rsi, 'RSI')
+        self.atr = self.I(lambda x: atr.values, 'ATR')
+        self.volume_sma = self.I(lambda x: volume_sma.values, 'Volume Filter')
 
     def next(self):
-        # Skip if indicators aren't ready
-        if (np.isnan(self.rsi[-1]) or 
-            np.isnan(self.lower_band[-1]) or 
-            np.isnan(self.atr[-1])):
-            return
-            
-        # Current values
         price = self.data.Close[-1]
-        atr = self.atr[-1] if not np.isnan(self.atr[-1]) else 0
+        volume = self.data.Volume[-1]
+        upper = self.upper[-1]
+        lower = self.lower[-1]
+        rsi = self.rsi[-1]
+        atr = self.atr[-1]
+        volume_sma = self.volume_sma[-1]
+        #print(self.data.index)            
         
-        # Only trade when volume is above average
-        if self.data.Volume[-1] < self.volume_filter[-1]:
+        
+        if volume < volume_sma:
             return
-            
-        # Entry conditions
+
         if not self.position:
-            # Long entry (oversold condition)
-            if price < self.lower_band[-1] and self.rsi[-1] < self.rsi_lower:
-                stop_loss = price - 1.5 * atr
-                take_profit = price + 3 * atr
-                self.buy(size=self.position_size, sl=stop_loss, tp=take_profit)
-                
-            # Short entry (overbought condition)
-            elif price > self.upper_band[-1] and self.rsi[-1] > self.rsi_upper:
-                stop_loss = price + 1.5 * atr
-                take_profit = price - 3 * atr
-                self.sell(size=self.position_size, sl=stop_loss, tp=take_profit)
-        
-        # Dynamic exit for long positions
-        elif self.position.is_long and (price > self.upper_band[-1] or self.rsi[-1] > 60):
+            if price < lower and rsi < self.rsi_lower:
+                sl = price - 1.5 * atr
+                tp = price + 3.0 * atr
+                self.buy(size=0.5)
+
+            elif price> upper and rsi > self.rsi_upper:
+                sl = price + 1.5 * atr
+                tp = price - 3.0 * atr 
+                self.sell(size=0.5, sl=sl, tp=tp)
+
+        #if self.position.is_long
+
+
+        elif self.position.is_long and price > upper:
             self.position.close()
-            
-        # Dynamic exit for short positions
-        elif self.position.is_short and (price < self.lower_band[-1] or self.rsi[-1] < 40):
+
+        elif self.position.is_short and price < lower:
             self.position.close()

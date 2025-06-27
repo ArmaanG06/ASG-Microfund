@@ -13,7 +13,7 @@ class GenericBacktestEngine:
         :param commission: Commission per trade (e.g., 0.002 = 0.2%).
         """
         self.strategy_cls = strategy_cls
-        self.strategy_kwargs = strategy_kwargs or {}
+        self.strategy_kwargs = strategy_kwargs
         self.cash = cash
         self.commission = commission
 
