@@ -52,6 +52,9 @@ class Portfolio:
                 )    
         data = self.data_loader.get_multiple_data(self.mean_tickers, self.start, self.end)
         mean_reversion_results = engine.batch_backtest(data)
+        first_df = list(data.values())[0]
+        self.mean_plot_path = engine.plot(first_df)
+        
         return mean_reversion_results
     
     def backtest_momentum(self):
@@ -128,7 +131,12 @@ class Portfolio:
         return mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_results
 
 
-    
+    def plot_stratgies(self):
+        factor_plot_path = self.factor_strategy.plot_performance()
+        momentum_plot_path = self.momentum_strategy.plot_preformance()
+        mean_plot_path = self.mean_plot_path
+        return factor_plot_path, momentum_plot_path, mean_plot_path
+
 
 
 

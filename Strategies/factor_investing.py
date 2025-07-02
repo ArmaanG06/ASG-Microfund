@@ -2,7 +2,7 @@ import time
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-
+import os
 
 
 class factor_investing_screener:
@@ -134,20 +134,27 @@ class factor_investing_strategy():
         
 
 
-    def plot_performance(self):
+    def plot_performance(self, save_path=None):
         if self.portfolio is None or self.portfolio.empty:
             print("[!] No portfolio performance to plot.")
             return
 
         plt.figure(figsize=(12, 6))
-        plt.plot(self.portfolio, label='Factor Investing Strategy')
+        plt.plot(self.portfolio, label='Factor Investing Strategy', color='navy')
         plt.title('Factor Investing Strategy Performance')
         plt.xlabel('Date')
         plt.ylabel('Cumulative Return')
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.show()
+        if save_path is None:
+            save_path = os.path.join('reporting', 'charts', 'factor_investing_plot.png')
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path)
+        plt.close()
+
+        return save_path
 
     def get_metrics(self, risk_free_rate=0.02):
         returns = self.returns

@@ -1,5 +1,6 @@
 import pandas as pd
 from backtesting import Backtest
+import os
 
 class GenericBacktestEngine:
     def __init__(self, strategy_cls, strategy_kwargs: dict = None, cash: float = 10000, commission: float = 0.002):
@@ -34,18 +35,27 @@ class GenericBacktestEngine:
     def plot(self, data: pd.DataFrame):
         """
         Plots the results using backtesting.py's built-in plot function.
+        Saves the output as an HTML file and returns the relative path.
         """
+
         strategy = self.strategy_cls.__name__
         start_date = str(data.index[0])[:10]
         end_date = str(data.index[-1])[:10]
+
+        plot_filename = f"{strategy}_{start_date}--{end_date}.html"
+        plot_path = os.path.join("reporting", "charts", plot_filename)
+
         bt = Backtest(
             data,
             self.strategy_cls,
             cash=self.cash,
             commission=self.commission
         )
-        bt.run(**self.strategy_kwargs)
-        bt.plot(filename=f"./reporting/charts/{strategy}_{start_date}--{end_date}")
+        bt.run(**(self.strategy_kwargs or {}))
+
+        bt.plot(filename=plot_path, open_browser=False)
+
+        return plot_path
 
     def batch_backtest(self, data_dict: dict):
         """

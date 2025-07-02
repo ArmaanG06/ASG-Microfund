@@ -2,6 +2,7 @@ from data.data_loader import data_loader
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 
 class momentum_strategy():
@@ -27,16 +28,28 @@ class momentum_strategy():
         return mtl.rolling(a).apply(f), mtl.rolling(b).apply(f), mtl.rolling(c).apply(f)
     
 
-    def _plot_pf(self, strat_pf):
+    def plot_preformance(self, save_path=None):
+        strat_pf = self.strat_pf
+        if strat_pf is None or strat_pf.empty:
+            print("[!] No performance data to plot.")
+            return None
+        
         plt.figure(figsize=(12, 6))
-        plt.plot(strat_pf, label='Momentum Strategy', linewidth=2)
+        plt.plot(strat_pf, label='Momentum Strategy', linewidth=2, color='darkgreen')
         plt.title(f'Momentum Strategy')
         plt.xlabel('Date')
         plt.ylabel('Cumulative Return')
         plt.grid(True)
         plt.legend()
         plt.tight_layout()
-        plt.show()
+        
+        if save_path is None:
+            save_path = os.path.join("reporting", "charts", 'momentum_strategy_plot.png')
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path)
+        plt.close()
+
+        return save_path
 
     def _metrics(self, pf_series, risk_free_rate=0.0):
         df = pf_series.copy()
@@ -134,5 +147,6 @@ class momentum_strategy():
                 returns.append(monthly_ret * (1-self.commission))
 
             strat_pf = pd.Series(returns, index=mtl.index[13:]).cumprod()
+            self.strat_pf = strat_pf
             metrics = self._metrics(strat_pf)
             return metrics

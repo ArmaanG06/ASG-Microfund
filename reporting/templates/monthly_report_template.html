@@ -276,6 +276,9 @@
             {% endfor %}
         </tbody>
     </table>
+    <h4>Mean Reversion Strategy - Interactive Chart</h4>
+    <iframe src="{{ mean_plot_web }}" width="100%" height="600px" style="border:none;"></iframe>
+
 
 
 <h2>Momentum Strategy</h2>
@@ -381,6 +384,9 @@
             {% endfor %}
         </tbody>
     </table>
+    <h4>Preformance Graph</h4>
+    <img src="{{ mom_plot_dir }}" alt="Momentum Strategy Performance" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+
 
 <h2>Factor Investing Strategy</h2>
 
@@ -468,7 +474,7 @@
 
     <h4>Performance Metrics</h4>
     <p>
-        The strategy’s long-term returns are evaluated through a combination of absolute and risk-adjusted measures. 
+        The strategy's long-term returns are evaluated through a combination of absolute and risk-adjusted measures. 
         These include:
     </p>
     <ul>
@@ -499,6 +505,11 @@
             {% endfor %}
         </tbody>
     </table>
+    <h4>Preformance Graph</h4>
+    <img src="{{ factor_plot_dir }}" alt="Factor Strategy Performance" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+
+
+
 
 <h2>Portfolio Allocation Framework</h2>
     <h4>Overview</h4>
