@@ -146,7 +146,7 @@ class momentum_strategy():
                 monthly_ret = mtl.loc[next_date, top_10].mean()
                 returns.append(monthly_ret * (1-self.commission))
 
-            strat_pf = pd.Series(returns, index=mtl.index[13:]).cumprod()
-            self.strat_pf = strat_pf
-            metrics = self._metrics(strat_pf)
-            return metrics
+        strat_pf = pd.Series(returns, index=mtl.index[13:]).cumprod()
+        self.strat_pf = strat_pf
+        metrics = self._metrics(strat_pf)
+        return metrics, pd.Series(returns)

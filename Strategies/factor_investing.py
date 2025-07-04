@@ -130,7 +130,7 @@ class factor_investing_strategy():
         self.returns = pf_ret
         self.portfolio = pf_cum
 
-        return pf_cum
+        return pf_cum, pf_ret
         
 
 

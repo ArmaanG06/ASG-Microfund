@@ -30,7 +30,9 @@ class GenericBacktestEngine:
             commission=self.commission
         )
         stats = bt.run()
-        return stats
+        equity_curve = stats['_equity_curve']
+        daily_returns = equity_curve['Equity'].pct_change().dropna()
+        return stats, daily_returns
 
     def plot(self, data: pd.DataFrame):
         """
@@ -63,10 +65,12 @@ class GenericBacktestEngine:
         Returns a dict of ticker: stats
         """
         results = {}
+        pf_returns = {}
         for ticker, data in data_dict.items():
             try:
-                stats = self.run(data)
+                stats, pf_ret = self.run(data)
+                pf_returns[ticker] = pf_ret
                 results[ticker] = stats
             except Exception as e:
                 print(f"Failed on {ticker}: {e}")
-        return results
+        return results, pf_returns

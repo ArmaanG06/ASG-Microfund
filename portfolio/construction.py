@@ -7,12 +7,13 @@ from Strategies.momentum import momentum_strategy
 from Strategies.mean_reversion import mean_reversion_strategy
 from backtester.engine import GenericBacktestEngine
 from data.data_loader import data_loader
+import os
+import matplotlib.pyplot as plt
+
 
 class Portfolio:
 
-    def __init__(self, start, end, commissions, cash, mean_tickers, factor_tickers):
-        user_tolerance = input("What is your risk tolerance (low, medium, or high): ")
-        user_time = input("What is your investment time horizon (long, medium, or short): ")
+    def __init__(self, start, end, commissions, cash, mean_tickers, factor_tickers, user_tolerance: str='low', user_time: str='medium'):
         self.risk_manager = RiskManagement(user_tolerance, user_time)
 
         self.mean_alloc, self.momentum_alloc, self.factor_alloc = self._get_strategy_allocations()
@@ -43,28 +44,26 @@ class Portfolio:
         return mean_alloc, momentum_alloc, factor_alloc
     
     def backtest_mean(self):
-        mean_reversion_results = []
-
         engine = GenericBacktestEngine(
                     strategy_cls=self.mean_strategy,
                     cash=self.mean_alloc*self.cash,
                     commission=self.commissions
                 )    
         data = self.data_loader.get_multiple_data(self.mean_tickers, self.start, self.end)
-        mean_reversion_results = engine.batch_backtest(data)
+        mean_reversion_results, pf_ret_dict = engine.batch_backtest(data)
         first_df = list(data.values())[0]
         self.mean_plot_path = engine.plot(first_df)
         
-        return mean_reversion_results
+        return mean_reversion_results, pf_ret_dict
     
     def backtest_momentum(self):
-        momentum_results = self.momentum_strategy.run()
-        return momentum_results
+        momentum_results, pf_ret = self.momentum_strategy.run()
+        return momentum_results, pf_ret
     
     def backtest_factor(self):
-        pf = self.factor_strategy.backtest()
+        pf_cum, pf_ret = self.factor_strategy.backtest()
         metrics = self.factor_strategy.get_metrics()
-        return metrics
+        return metrics, pf_ret
     
     def _get_portfolio_results(self, mean_reversion_results, momentum_results, factor_results):
 
@@ -119,23 +118,123 @@ class Portfolio:
             final_metrics[metric] = sum(weighted_values) / total_weight if total_weight > 0 else np.nan
 
         return mean_reversion_summary, momentum_summary, factor_summary, final_metrics
+    
+
+    def returns_df(self, mean_reversion, momentum, factor_investing):
+        """
+        Combine daily returns from 3 strategies into one aligned DataFrame.
+        
+        Parameters:
+            mean_reversion (dict): Daily returns (only use first).
+            momentum (pd.Series): Monthly returns.
+            factor_investing (pd.Series): Daily returns.
+            
+        Returns:
+            pd.DataFrame: Combined returns with columns:
+                        ['Mean Reversion', 'Factor Investing', 'Momentum']
+        """
+        if not mean_reversion:
+            raise ValueError("mean_reversion dictionary is empty")
+        
+        # Get first mean reversion series
+        first_key = next(iter(mean_reversion))
+        mean_reversion = pd.Series(mean_reversion[first_key])
+                
+        # Create common index
+        start_date = min(
+            #momentum.index.min(), 
+            mean_reversion.index.min(), 
+            factor_investing.index.min()
+        )
+        end_date = max(
+            #momentum.index.max(), 
+            mean_reversion.index.max(), 
+            factor_investing.index.max()
+        )
+        full_index = pd.date_range(start=start_date, end=end_date, freq='D')
+        
+        combined = pd.DataFrame(index=full_index)
+        
+        combined['Mean Reversion'] = mean_reversion
+        combined['Factor Investing'] = factor_investing
+        
+        
+        momentum_daily = pd.Series(index=full_index, dtype=float)
+        momentum_daily[momentum.index] = momentum
+        
+        momentum_daily = momentum_daily.ffill()
+        
+        combined['Momentum'] = momentum_daily.pct_change().fillna(0)
+        combined.dropna(how='any', inplace=True)
+        self.combined_results = combined
+        return combined
+    
+    def _plot_daily_returns(self, save_dir="reporting/charts"):
+        df_returns = self.combined_results
+        allocs = {
+        'Mean Reversion': self.cash * self.mean_alloc,
+        'Factor Investing': self.cash * self.factor_alloc,
+        'Momentum': self.cash * self.momentum_alloc
+        }
+
+        equity_curves = {}
+        for strat in df_returns.columns:
+            cumulative_return = (1 + df_returns[strat]).cumprod()
+            equity_curves[strat] = cumulative_return * allocs[strat]
+
+        df_equity = pd.DataFrame(equity_curves)
+
+        plt.figure(figsize=(12, 6))
+        for strat in df_equity.columns:
+            plt.plot(df_equity.index, df_equity[strat], label=strat, linewidth=2)
+        plt.title("Equity Curve per Strategy")
+        plt.xlabel("Date")
+        plt.ylabel("Portfolio Value ($)")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        equity_path = os.path.join("reporting", "charts", 'equity_curve.png')
+        os.makedirs(os.path.dirname(equity_path), exist_ok=True)
+        plt.savefig(equity_path)
+        plt.close()
+            
+        # --- Plot Daily Returns ---
+        plt.figure(figsize=(12, 6))
+        for strat in df_returns.columns:
+            plt.plot(df_returns.index, df_returns[strat], label=strat, linewidth=1)
+        plt.title("Daily Returns per Strategy")
+        plt.xlabel("Date")
+        plt.ylabel("Daily Return")
+        plt.grid(True)
+        plt.legend()
+        plt.tight_layout()
+        returns_path = os.path.join("reporting", "charts", "daily_returns.png")
+        os.makedirs(os.path.dirname(returns_path), exist_ok=True)
+        plt.savefig(returns_path)
+        plt.close()
+
+        return equity_path, returns_path
 
 
     def backtest_portfolio(self):
-        mean_reversion_results = self.backtest_mean()
-        momentum_results = self.backtest_momentum()
-        factor_results = self.backtest_factor()
+        mean_reversion_results, mean_returns = self.backtest_mean()
+        momentum_results, momentum_returns = self.backtest_momentum()
+        factor_results, factor_returns = self.backtest_factor()
 
         mean_reversion_summary, momentum_summary, factor_summary, final_metrics = self._get_portfolio_results(mean_reversion_results, momentum_results, factor_results)
         benchmark_results = self.benchmark.get_metrics()
-        return mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_results
+        returns_df = self.returns_df(mean_returns, momentum_returns, factor_returns)
+        return mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_results, returns_df
 
 
     def plot_stratgies(self):
         factor_plot_path = self.factor_strategy.plot_performance()
         momentum_plot_path = self.momentum_strategy.plot_preformance()
         mean_plot_path = self.mean_plot_path
-        return factor_plot_path, momentum_plot_path, mean_plot_path
+        equity_curves_path, returns_curve_path = self._plot_daily_returns()
+        return factor_plot_path, momentum_plot_path, mean_plot_path, equity_curves_path, returns_curve_path
+
+    
 
 
 

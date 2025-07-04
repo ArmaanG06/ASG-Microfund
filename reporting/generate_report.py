@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import imgkit
 import os
 
-def _render_html(start_date, end_date):
+def _render_html(start_date, end_date,risk, time):
 
     template_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates")),
@@ -28,9 +28,9 @@ def _render_html(start_date, end_date):
 
     mean_tickers = ['CL=F']
     factor_tickers = ['NVDA', 'AAPL', 'JPM', 'TD', 'F', 'UNH', 'AMZN']
-    port = Portfolio('2020-01-01', '2025-01-01', 0.001, 1000000, mean_tickers, factor_tickers)
-    mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_summary= port.backtest_portfolio()
-    factor_plot_dir, mom_plot_dir, mean_plot_dir = port.plot_stratgies()
+    port = Portfolio('2020-01-01', '2025-01-01', 0.001, 1000000, mean_tickers, factor_tickers, risk,  time)
+    mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_summary, returns_df= port.backtest_portfolio()
+    factor_plot_dir, mom_plot_dir, mean_plot_dir, equity_curve_path, daily_return_path = port.plot_stratgies()
     benchmark_metrics_summary = {'Return [%]': benchmark_summary['Return [%]'], 'CAGR [%]': benchmark_summary['CAGR [%]'], 'Sharpe Ratio': benchmark_summary['Sharpe Ratio'], 'Max. Drawdown': benchmark_summary['Max. Drawdown [%]']}
 
 
@@ -55,7 +55,7 @@ def _render_html(start_date, end_date):
     )
     return rendered_html, output_path
 
-def generate_report(start_date, end_date):
+def generate_report(start_date, end_date, risk, time):
     """
     Generates an HTML performance report for a strategy over a given time range.
     
@@ -67,7 +67,7 @@ def generate_report(start_date, end_date):
 
     # Set up the Jinja2 environment
     
-    rendered_html, output_path= _render_html(start_date, end_date)
+    rendered_html, output_path= _render_html(start_date, end_date, risk, time)
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(rendered_html)
