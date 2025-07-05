@@ -46,7 +46,8 @@ if run_simulation:
                 user_time=time_hor
             )
 
-            mean_results, mom_results, factor_results, final_metrics, benchmark_metrics = port.backtest_portfolio()
+            mean_results, mom_results, factor_results, final_metrics, benchmark_metrics, returns_df = port.backtest_portfolio()
+
 
 
             benchmark_metrics_sum = {}
@@ -74,7 +75,9 @@ if run_simulation:
             st.subheader("Factor Investing")
             st.dataframe(factor_results)
 
-            st.link_button("Download Full Report", "https://www.youtube.com/")
+            st.subheader("Overall Daily Strategy Preformance")
+            st.dataframe(returns_df)
+
             #st.download_button("Download Report", )
 
         except Exception as e:

@@ -9,6 +9,8 @@ from backtester.engine import GenericBacktestEngine
 from data.data_loader import data_loader
 import os
 import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+
 
 
 class Portfolio:
@@ -133,13 +135,16 @@ class Portfolio:
             pd.DataFrame: Combined returns with columns:
                         ['Mean Reversion', 'Factor Investing', 'Momentum']
         """
+        
         if not mean_reversion:
             raise ValueError("mean_reversion dictionary is empty")
         
         # Get first mean reversion series
         first_key = next(iter(mean_reversion))
         mean_reversion = pd.Series(mean_reversion[first_key])
-                
+
+        monthly_dates = pd.date_range(start=self.start, periods=len(momentum), freq='ME')
+        momentum.index = monthly_dates        
         # Create common index
         start_date = min(
             #momentum.index.min(), 
@@ -159,12 +164,9 @@ class Portfolio:
         combined['Factor Investing'] = factor_investing
         
         
-        momentum_daily = pd.Series(index=full_index, dtype=float)
-        momentum_daily[momentum.index] = momentum
-        
-        momentum_daily = momentum_daily.ffill()
-        
-        combined['Momentum'] = momentum_daily.pct_change().fillna(0)
+        momentum_daily_value = momentum.reindex(full_index, method='ffill')
+        combined['Momentum'] = momentum_daily_value.pct_change().fillna(0)
+
         combined.dropna(how='any', inplace=True)
         self.combined_results = combined
         return combined
@@ -173,9 +175,9 @@ class Portfolio:
         df_returns = self.combined_results
         allocs = {
         'Mean Reversion': self.cash * self.mean_alloc,
-        'Factor Investing': self.cash * self.factor_alloc,
-        'Momentum': self.cash * self.momentum_alloc
-        }
+        'Momentum': self.cash * self.momentum_alloc,
+        'Factor Investing': self.cash * self.factor_alloc
+        }  
 
         equity_curves = {}
         for strat in df_returns.columns:
@@ -192,12 +194,17 @@ class Portfolio:
         plt.ylabel("Portfolio Value ($)")
         plt.grid(True)
         plt.legend()
-        plt.tight_layout()
+
+        ax = plt.gca()
+        ax.get_yaxis().set_major_formatter(
+            mtick.FuncFormatter(lambda x, p: f'${int(x):,}')
+        )
+
         equity_path = os.path.join("reporting", "charts", 'equity_curve.png')
         os.makedirs(os.path.dirname(equity_path), exist_ok=True)
         plt.savefig(equity_path)
         plt.close()
-            
+                    
         # --- Plot Daily Returns ---
         plt.figure(figsize=(12, 6))
         for strat in df_returns.columns:
@@ -207,6 +214,9 @@ class Portfolio:
         plt.ylabel("Daily Return")
         plt.grid(True)
         plt.legend()
+        if df_returns.abs().max().max() > 0.2:
+            plt.ylim(-0.20, 0.20)
+
         plt.tight_layout()
         returns_path = os.path.join("reporting", "charts", "daily_returns.png")
         os.makedirs(os.path.dirname(returns_path), exist_ok=True)

@@ -2,125 +2,131 @@
 <html>
 <head>
     <style>
+    body {
+        font-family: "Helvetica Neue", "Roboto", "Arial", sans-serif;
+        background-color: #ffffff;
+        color: #1b1b1b;
+        margin: 40px auto;
+        max-width: 900px;
+        line-height: 1.6;
+        font-size: 15px;
+    }
+
+    h2, h4 {
+        color: #002244;
+        margin-bottom: 10px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+    }
+
+    h2 {
+        font-size: 1.6em;
+        border-bottom: 2px solid #d8d8d8;
+        padding-bottom: 4px;
+        margin-top: 50px;
+    }
+
+    h4 {
+        font-size: 1.25em;
+        margin-top: 30px;
+    }
+
+    h5 {
+        font-size: 1.1em;
+        margin-top: 20px;
+        color: #444;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+        margin-bottom: 40px;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        border: 1px solid #cccccc;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #f1f1f1;
+        font-weight: 600;
+        color: #111111;
+    }
+
+    tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    p {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        text-align: justify;
+    }
+
+    ul {
+        margin-left: 25px;
+        padding-left: 10px;
+    }
+
+    ul ul {
+        margin-left: 20px;
+        list-style-type: disc;
+    }
+
+    strong {
+        font-weight: 600;
+        color: #000000;
+    }
+
+    /* --- Print Styling --- */
+    @media print {
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff;
-            color: #2c2f33;
-            margin: 40px auto;
-            max-width: 900px;
-            line-height: 1.75;
-            font-size: 16px;
+            font-family: "Georgia", "Times New Roman", serif;
+            color: #000000;
+            font-size: 12px;
         }
 
-        h2, h4 {
-            color: #003366;
-            margin-bottom: 12px;
-        }
-
-        h2 {
-            font-size: 1.75em;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 6px;
-            margin-top: 50px;
-        }
-
-        h4 {
-            font-size: 1.3em;
-            margin-top: 30px;
-        }
-
-        h5 {
-            font-size: 1.1em;
-            margin-top: 20px;
-            color: #444;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 24px;
-            margin-bottom: 40px;
-            background-color: #fdfdfd;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        th, td {
-            padding: 14px 18px;
-            border: 1px solid #d0d0d0;
-            text-align: left;
+        table, th, td {
+            border: 1px solid #000000;
         }
 
         th {
-            background-color: #f0f4f8;
-            font-weight: bold;
-            color: #1a1a1a;
+            background-color: #dddddd !important;
+            color: #000000 !important;
         }
 
-        tr:nth-child(even) {
-            background-color: #f8f9fc;
+        h2, h4 {
+            color: #000000;
+        }
+    }
+
+    /* --- Responsive Mobile Tweak --- */
+    @media (max-width: 768px) {
+        body {
+            margin: 20px;
+            font-size: 14px;
         }
 
-        p {
-            margin-top: 12px;
-            margin-bottom: 12px;
-            text-align: justify;
+        h2 {
+            font-size: 1.4em;
         }
 
-        ul {
-            margin-left: 25px;
-            padding-left: 10px;
+        h4 {
+            font-size: 1.1em;
         }
 
-        ul ul {
-            margin-left: 20px;
-            list-style-type: disc;
+        table, th, td {
+            font-size: 13px;
         }
-
-        strong {
-            font-weight: 600;
-            color: #000;
-        }
-
-        @media print {
-            body {
-                background-color: #fff;
-                color: #000;
-                font-size: 13px;
-            }
-
-            table, th, td {
-                border: 1px solid #000;
-            }
-
-            th {
-                background-color: #ddd !important;
-                color: #000 !important;
-            }
-
-            h2, h4 {
-                color: #000;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                margin: 20px;
-                font-size: 14px;
-            }
-
-            h2 {
-                font-size: 1.5em;
-            }
-
-            h4 {
-                font-size: 1.1em;
-            }
-
-            table, th, td {
-                font-size: 13px;
-            }
-        }
-    </style>
+    }
+</style>
 
     <title>ASG Microfund - Performance Report - {{ start_date }} to {{ end_date }}</title>
 </head>
@@ -277,7 +283,7 @@
         </tbody>
     </table>
     <h4>Mean Reversion Strategy - Interactive Chart</h4>
-    <iframe src="{{ mean_plot_web }}" width="100%" height="600px" style="border:none;"></iframe>
+    <iframe src="{{ mean_plot_dir }}" width="100%" height="600px" style="border:none;"></iframe>
 
 
 
@@ -614,9 +620,18 @@
         annual growth rate (CAGR) of 
         <strong>{{ final_metrics['CAGR [%]'] }}%</strong>, indicating robust long-term compounding performance despite regime shifts across the market cycle. Risk-adjusted 
         performance was solid, with a Sharpe Ratio of <strong>{{ final_metrics['Sharpe Ratio'] }}</strong>, reflecting efficient return generation relative to volatility. 
-        The maximum observed drawdown was <strong>{{ final_metrics['Max. Drawdown'] }}%</strong>, demonstrating strong capital preservation and resilience through market stress 
+        The maximum observed drawdown was <strong>{{ final_metrics['Max. Drawdown [%]'] }}%</strong>, demonstrating strong capital preservation and resilience through market stress 
         periods. These metrics collectively highlight the effectiveness of the multi-strategy framework in balancing alpha generation with disciplined risk control.
     </p>
+    <h4>Equity Curve and Daily Returns Plots</h4>
+    <figure>
+        <img src="{{ equity_curve_dir }}" alt="Equity Curve Plot" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+        <figcaption>Equity Curve for each strategy in the ASG Microfund between {{ start_date }} and {{ end_date }}</figcaption>
+    </figure>
+    <figure>
+        <img src="{{ daily_return_dir }}" alt="Daily Return Plot" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+        <figcaption>Daily Returns for each strategy in the ASG Microfund between {{start_date}} and {{end_date}}</figcaption>
+    </figure>
 
 
     <h2>Benchmark: ^GSPC </h2>

@@ -2,125 +2,131 @@
 <html>
 <head>
     <style>
+    body {
+        font-family: "Helvetica Neue", "Roboto", "Arial", sans-serif;
+        background-color: #ffffff;
+        color: #1b1b1b;
+        margin: 40px auto;
+        max-width: 900px;
+        line-height: 1.6;
+        font-size: 15px;
+    }
+
+    h2, h4 {
+        color: #002244;
+        margin-bottom: 10px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+    }
+
+    h2 {
+        font-size: 1.6em;
+        border-bottom: 2px solid #d8d8d8;
+        padding-bottom: 4px;
+        margin-top: 50px;
+    }
+
+    h4 {
+        font-size: 1.25em;
+        margin-top: 30px;
+    }
+
+    h5 {
+        font-size: 1.1em;
+        margin-top: 20px;
+        color: #444;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 24px;
+        margin-bottom: 40px;
+        background-color: #ffffff;
+        border: 1px solid #cccccc;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        border: 1px solid #cccccc;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #f1f1f1;
+        font-weight: 600;
+        color: #111111;
+    }
+
+    tr:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    p {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        text-align: justify;
+    }
+
+    ul {
+        margin-left: 25px;
+        padding-left: 10px;
+    }
+
+    ul ul {
+        margin-left: 20px;
+        list-style-type: disc;
+    }
+
+    strong {
+        font-weight: 600;
+        color: #000000;
+    }
+
+    /* --- Print Styling --- */
+    @media print {
         body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff;
-            color: #2c2f33;
-            margin: 40px auto;
-            max-width: 900px;
-            line-height: 1.75;
-            font-size: 16px;
+            font-family: "Georgia", "Times New Roman", serif;
+            color: #000000;
+            font-size: 12px;
         }
 
-        h2, h4 {
-            color: #003366;
-            margin-bottom: 12px;
-        }
-
-        h2 {
-            font-size: 1.75em;
-            border-bottom: 2px solid #ccc;
-            padding-bottom: 6px;
-            margin-top: 50px;
-        }
-
-        h4 {
-            font-size: 1.3em;
-            margin-top: 30px;
-        }
-
-        h5 {
-            font-size: 1.1em;
-            margin-top: 20px;
-            color: #444;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 24px;
-            margin-bottom: 40px;
-            background-color: #fdfdfd;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        th, td {
-            padding: 14px 18px;
-            border: 1px solid #d0d0d0;
-            text-align: left;
+        table, th, td {
+            border: 1px solid #000000;
         }
 
         th {
-            background-color: #f0f4f8;
-            font-weight: bold;
-            color: #1a1a1a;
+            background-color: #dddddd !important;
+            color: #000000 !important;
         }
 
-        tr:nth-child(even) {
-            background-color: #f8f9fc;
+        h2, h4 {
+            color: #000000;
+        }
+    }
+
+    /* --- Responsive Mobile Tweak --- */
+    @media (max-width: 768px) {
+        body {
+            margin: 20px;
+            font-size: 14px;
         }
 
-        p {
-            margin-top: 12px;
-            margin-bottom: 12px;
-            text-align: justify;
+        h2 {
+            font-size: 1.4em;
         }
 
-        ul {
-            margin-left: 25px;
-            padding-left: 10px;
+        h4 {
+            font-size: 1.1em;
         }
 
-        ul ul {
-            margin-left: 20px;
-            list-style-type: disc;
+        table, th, td {
+            font-size: 13px;
         }
-
-        strong {
-            font-weight: 600;
-            color: #000;
-        }
-
-        @media print {
-            body {
-                background-color: #fff;
-                color: #000;
-                font-size: 13px;
-            }
-
-            table, th, td {
-                border: 1px solid #000;
-            }
-
-            th {
-                background-color: #ddd !important;
-                color: #000 !important;
-            }
-
-            h2, h4 {
-                color: #000;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                margin: 20px;
-                font-size: 14px;
-            }
-
-            h2 {
-                font-size: 1.5em;
-            }
-
-            h4 {
-                font-size: 1.1em;
-            }
-
-            table, th, td {
-                font-size: 13px;
-            }
-        }
-    </style>
+    }
+</style>
 
     <title>ASG Microfund - Performance Report - 2020-01-01 to 2025-01-01</title>
 </head>
@@ -533,22 +539,22 @@
             
                 <tr>
                     <td>Return [%]</td>
-                    <td>540.71</td>
+                    <td>83.87</td>
                 </tr>
             
                 <tr>
                     <td>CAGR [%]</td>
-                    <td>44.99</td>
+                    <td>12.95</td>
                 </tr>
             
                 <tr>
                     <td>Sharpe Ratio</td>
-                    <td>1.24</td>
+                    <td>0.25</td>
                 </tr>
             
                 <tr>
                     <td>Max. Drawdown [%]</td>
-                    <td>-45.45</td>
+                    <td>-69.47</td>
                 </tr>
             
         </tbody>
@@ -658,13 +664,22 @@
 <h2>Final Portfolio Preformance Summary</h2>
     <p>
         The aggregate portfolio, constructed through a dynamic allocation across the Mean Reversion, Momentum, and Factor Investing strategies,
-        delivered a total return of <strong> 254.3640732452941%</strong> over the backtesting period. The portfolio achieved a compound 
+        delivered a total return of <strong> 90.3358514120094%</strong> over the backtesting period. The portfolio achieved a compound 
         annual growth rate (CAGR) of 
-        <strong>26.909777212586054%</strong>, indicating robust long-term compounding performance despite regime shifts across the market cycle. Risk-adjusted 
-        performance was solid, with a Sharpe Ratio of <strong>0.8159041150352908</strong>, reflecting efficient return generation relative to volatility. 
-        The maximum observed drawdown was <strong>%</strong>, demonstrating strong capital preservation and resilience through market stress 
+        <strong>15.407978893685147%</strong>, indicating robust long-term compounding performance despite regime shifts across the market cycle. Risk-adjusted 
+        performance was solid, with a Sharpe Ratio of <strong>0.46057183055011214</strong>, reflecting efficient return generation relative to volatility. 
+        The maximum observed drawdown was <strong>-53.75251722969446%</strong>, demonstrating strong capital preservation and resilience through market stress 
         periods. These metrics collectively highlight the effectiveness of the multi-strategy framework in balancing alpha generation with disciplined risk control.
     </p>
+    <h4>Equity Curve and Daily Returns Plots</h4>
+    <figure>
+        <img src="../charts/equity_curve.png" alt="Equity Curve Plot" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+        <figcaption>Equity Curve for each strategy in the ASG Microfund between 2020-01-01 and 2025-01-01</figcaption>
+    </figure>
+    <figure>
+        <img src="../charts/daily_returns.png" alt="Daily Return Plot" style="max-width: 100%; height: auto; border: 1px solid #dee2e6; padding: 10px; margin-top: 10px;">
+        <figcaption>Daily Returns for each strategy in the ASG Microfund between 2020-01-01 and 2025-01-01</figcaption>
+    </figure>
 
 
     <h2>Benchmark: ^GSPC </h2>

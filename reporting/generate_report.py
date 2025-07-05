@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 import imgkit
 import os
 
-def _render_html(start_date, end_date,risk, time):
+def _render_html(start_date, end_date,risk, time, mean_tickers, factor_tickers, commissions, cash):
 
     template_env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(os.path.join(os.path.dirname(__file__), "templates")),
@@ -26,17 +26,18 @@ def _render_html(start_date, end_date,risk, time):
     output_filename = f"ASG Microfund - {start_date} to {end_date}.html"
     output_path = os.path.join(output_dir, output_filename)
 
-    mean_tickers = ['CL=F']
-    factor_tickers = ['NVDA', 'AAPL', 'JPM', 'TD', 'F', 'UNH', 'AMZN']
-    port = Portfolio('2020-01-01', '2025-01-01', 0.001, 1000000, mean_tickers, factor_tickers, risk,  time)
+    port = Portfolio('2020-01-01', '2025-01-01', commissions, cash, mean_tickers, factor_tickers, risk,  time)
     mean_reversion_summary, momentum_summary, factor_summary, final_metrics, benchmark_summary, returns_df= port.backtest_portfolio()
     factor_plot_dir, mom_plot_dir, mean_plot_dir, equity_curve_path, daily_return_path = port.plot_stratgies()
+
     benchmark_metrics_summary = {'Return [%]': benchmark_summary['Return [%]'], 'CAGR [%]': benchmark_summary['CAGR [%]'], 'Sharpe Ratio': benchmark_summary['Sharpe Ratio'], 'Max. Drawdown': benchmark_summary['Max. Drawdown [%]']}
 
 
     factor_plot_path_web = os.path.relpath(factor_plot_dir, start=os.path.dirname(output_path)).replace('\\', '/')
     momentum_plot_path_web = os.path.relpath(mom_plot_dir, start=os.path.dirname(output_path)).replace('\\', '/')
     mean_plot_web = os.path.relpath(mean_plot_dir, start=os.path.dirname(output_path)).replace("\\", "/")
+    equity_curve_plot_web = os.path.relpath(equity_curve_path, start=os.path.dirname(output_path)).replace("\\", "/")
+    daily_returns_plot_web = os.path.relpath(daily_return_path, start=os.path.dirname(output_path)).replace("\\", "/")
 
 
     rendered_html = template.render(
@@ -51,11 +52,13 @@ def _render_html(start_date, end_date,risk, time):
         end_date=end_date,
         factor_plot_dir=factor_plot_path_web,
         mom_plot_dir=momentum_plot_path_web,
-        mean_plot_web=mean_plot_web
+        mean_plot_dir=mean_plot_web,
+        equity_curve_dir=equity_curve_plot_web,
+        daily_return_dir=daily_returns_plot_web
     )
     return rendered_html, output_path
 
-def generate_report(start_date, end_date, risk, time):
+def generate_report(start_date, end_date, risk, time, mean_tickers, factor_tickers, commissions, cash):
     """
     Generates an HTML performance report for a strategy over a given time range.
     
@@ -67,7 +70,7 @@ def generate_report(start_date, end_date, risk, time):
 
     # Set up the Jinja2 environment
     
-    rendered_html, output_path= _render_html(start_date, end_date, risk, time)
+    rendered_html, output_path= _render_html(start_date, end_date, risk, time, mean_tickers, factor_tickers, commissions, cash)
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(rendered_html)
@@ -75,59 +78,46 @@ def generate_report(start_date, end_date, risk, time):
     
     print(f"✅ Report generated and saved to {output_path}")
 
-def generate_pdf(start_date, end_date):
+def generate_pdf(start_date, end_date, risk, time):
+    """
+    Generates a PDF performance report for a strategy over a given time range.
     
-
-    # Step 1: Get the HTML and output path
-    rendered_html, _ = _render_html(start_date, end_date)
-
-    # Step 2: Parse the iframe src from rendered HTML
-    soup = BeautifulSoup(rendered_html, 'html.parser')
-    iframe = soup.find('iframe')
-    if not iframe or not iframe.get('src'):
-        raise ValueError("No iframe found in rendered HTML.")
-
-    iframe_src = iframe['src']  # e.g., 'reporting/charts/mean_reversion_strategy_2020-01-01--2025-01-01.html'
-
-    # Correct the path to 'reporting/charts' directory (strip extra 'reporting')
-    iframe_path = os.path.join(os.path.dirname(__file__), "reports", f'ASG Microfund - {start_date} to {end_date}.html')
-
-    # Step 3: Check if the iframe source file exists
-    if not os.path.isfile(iframe_path):
-        raise OSError(f"Iframe source file not found: {iframe_path}")
-
-    # Step 4: Convert the iframe HTML to PNG
-    png_output_dir = os.path.join("reporting", "charts")
-    os.makedirs(png_output_dir, exist_ok=True)
-
-    png_filename = os.path.basename(iframe_src).replace(".html", ".png")
-    png_full_path = os.path.join(png_output_dir, png_filename)
-
-    # Configure imgkit to use wkhtmltoimage explicitly if not in the PATH
-    config = imgkit.config(wkhtmltoimage=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe")
-
-    # Convert the iframe HTML to PNG
-    imgkit.from_file(iframe_path, png_full_path, config=config)
-
-    # Step 5: Compute relative path for PDF embedding
-    rel_png_path = os.path.relpath(png_full_path, start=os.path.join("docs", "external")).replace("\\", "/")
-    img_tag = soup.new_tag("img", src=rel_png_path, alt="Mean Reversion Performance Chart", style="width:100%; max-width:900px;")
-
-    # Step 6: Replace iframe with <img>
-    iframe.replace_with(img_tag)
-    modified_html = str(soup)
-
-    # Step 7: Generate PDF
-    config = pdfkit.configuration(wkhtmltopdf=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe")
-    pdf_output_path = os.path.join("docs", "external", f"ASG Microfund - {start_date} to {end_date}.pdf")
-    os.makedirs(os.path.dirname(pdf_output_path), exist_ok=True)
-
+    Parameters:
+        start_date (str): Start date in 'YYYY-MM-DD' format.
+        end_date (str): End date in 'YYYY-MM-DD' format.
+        risk (float): Risk parameter for the portfolio.
+        time (str): Time horizon for the strategies.
+    """
+    # First render the HTML content
+    rendered_html, html_output_path = _render_html(start_date, end_date, risk, time)
+    
+    # Set up output directory for PDF
+    output_dir = os.path.join("docs", "external")
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Create PDF output path
+    pdf_output_filename = f"ASG Microfund - {start_date} to {end_date}.pdf"
+    pdf_output_path = os.path.join(output_dir, pdf_output_filename)
+    
+    # Options for PDF generation
     options = {
-        'enable-local-file-access': None,
-        'quiet': ''
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'encoding': 'UTF-8',
+        'quiet': '',
+        'no-outline': None,
+        'enable-local-file-access': None  # Required to access local images
     }
+    config =imgkit.config(wkhtmltoimage=r"C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe")
 
-    # Step 8: Generate the PDF
-    pdfkit.from_string(modified_html, pdf_output_path, configuration=config, options=options)
-
-    print(f"✅ PDF report saved to {pdf_output_path}")
+    try:
+        # Generate PDF from the HTML string
+        pdfkit.from_string(rendered_html, pdf_output_path, options=options, configuration=config)
+        print(f"✅ PDF report generated and saved to {pdf_output_path}")
+        return pdf_output_path
+    except Exception as e:
+        print(f"❌ Failed to generate PDF report: {str(e)}")
+        raise
