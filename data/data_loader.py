@@ -22,14 +22,11 @@ class data_loader:
         if os.path.exists(filepath):
             data = pd.read_csv(filepath, index_col='Date', parse_dates=True)
             sliced_data = data.loc[start:end]
-            print(f"Retrieving {ticker} data from csv")
             if not sliced_data.empty:
                 return sliced_data
 
-        print(f"Downloading {ticker} from yfinance...")
         data = yf.download(ticker, start=start, end=end, progress=False)
         if data.empty:
-            print(f"[!] Failed to download {ticker}. Skipping.")
             return None
         data.dropna(inplace=True)
         if 'Adj Close' in data.columns:
@@ -76,13 +73,11 @@ class data_loader:
             try:
                 with open(file_path, 'r') as f:
                     fundamentals = json.load(f)
-                print(f"[!] Loading fundamentals from file for {ticker}")
                 return fundamentals
             except Exception as e:
                 print(f"[!] Failed to load fundamentals from file for {ticker}: {e}")
 
         try:
-            print(f"[i] Downloading fundamentals for {ticker} from Yahoo Finance... ")
             fundamentals = yf.Ticker(ticker).info
             with open(file_path, 'w') as f:
                 json.dump(fundamentals, f)
